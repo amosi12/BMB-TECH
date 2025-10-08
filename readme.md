@@ -67,7 +67,7 @@
   <table>
     <tr>
       <td>
-        <a href="https://dashboard.heroku.com/new?template=https://github.com/Dev-bmbtech/BMB-XMD" target="_blank">
+        <a href="https://dashboard.heroku.com/new?template=https://github.com/amosi12/BMB-TECH" target="_blank">
           <img src="https://img.shields.io/badge/DEPLOY HEROKU-F44336?style=for-the-badge&logo=heroku&logoColor=white&labelColor=1a1a1a"/>
         </a>
       </td>
