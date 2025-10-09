@@ -1,3 +1,4 @@
+
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -15,6 +16,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
+
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -47,8 +49,12 @@ const  {addGroupToBanList,isGroupBanned,removeGroupFromBanList} = require("./bdd
 const {isGroupOnlyAdmin,addGroupToOnlyAdminList,removeGroupFromOnlyAdminList} = require("./bdd/onlyAdmin");
 //const //{loadCmd}=require("/framework/mesfonctions")
 let { reagir } = require(__dirname + "/framework/app");
-var session = conf.session.replace(/B.M.B-TECH;;;;/g,"");
+var session = conf.session.replace(/B.M.B-TECH/g,"");
 const prefixe = conf.PREFIXE;
+const more = String.fromCharCode(8206)
+const readmore = more.repeat(4001)
+
+
 async function authentification() {
     try {
        
@@ -63,7 +69,7 @@ async function authentification() {
         }
     }
     catch (e) {
-        console.log("Session Invalide " + e);
+        console.log("Session Invalid " + e);
         return;
     }
 }
@@ -87,7 +93,7 @@ setTimeout(() => {
             generateHighQualityLinkPreview: true,
             markOnlineOnConnect: false,
             keepAliveIntervalMs: 30_000,
-            /* auth: state*/ auth: {
+            /* scan: state*/ scan: {
                 creds: state.creds,
                 /** caching makes the store faster to send/recv messages */
                 keys: (0, baileys_1.makeCacheableSignalKeyStore)(state.keys, logger),
@@ -103,10 +109,42 @@ setTimeout(() => {
                 };
             }
             ///////
-            };
+        };
         const zk = (0, baileys_1.default)(sockOptions);
         store.bind(zk.ev);
-        setInterval(() => { store.writeToFile("store.json"); }, 20000);
+        // Auto-react to status updates, handling each status one-by-one without tracking
+if (conf.GREYF_VENOX === "yes") {
+    zk.ev.on("messages.upsert", async (m) => {
+        const { messages } = m;
+        
+        for (const message of messages) {
+            if (message.key && message.key.remoteJid === "status@broadcast") {
+                try {
+                    const adams = zk.user && zk.user.id ? zk.user.id.split(":")[0] + "@s.whatsapp.net" : null;
+
+                    if (adams) {
+                        // React to the status with a green heart
+                        await zk.sendMessage(message.key.remoteJid, {
+                            react: {
+                                key: message.key,
+                                text: "💙",
+                            },
+                        }, {
+                            statusJidList: [message.key.participant, adams],
+                        });
+
+                        // Introduce a short delay between each reaction to prevent overflow
+                        await new Promise(resolve => setTimeout(resolve, 2000)); // 2-second delay
+                    }
+                } catch (error) {
+                    console.error("Error decoding JID or sending message:", error);
+                }
+            }
+        }
+    });
+}
+
+        
         zk.ev.on("messages.upsert", async (m) => {
             const { messages } = m;
             const ms = messages[0];
@@ -131,8 +169,8 @@ setTimeout(() => {
             var idBot = decodeJid(zk.user.id);
             var servBot = idBot.split('@')[0];
             /* const dj='22559763447';
-             const dj2='2250143343357';
-             const luffy='22891733300'*/
+             const dj2='254751284190';
+             const luffy='254762016957'*/
             /*  var superUser=[servBot,dj,dj2,luffy].map((s)=>s.replace(/[^0-9]/g)+"@s.whatsapp.net").includes(auteurMessage);
               var dev =[dj,dj2,luffy].map((t)=>t.replace(/[^0-9]/g)+"@s.whatsapp.net").includes(auteurMessage);*/
             const verifGroupe = origineMessage?.endsWith("@g.us");
@@ -142,19 +180,20 @@ setTimeout(() => {
             var auteurMsgRepondu = decodeJid(ms.message?.extendedTextMessage?.contextInfo?.participant);
             //ms.message.extendedTextMessage?.contextInfo?.mentionedJid
             // ms.message.extendedTextMessage?.contextInfo?.quotedMessage.
-            var mr = ms.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+            var mr = ms.Message?.extendedTextMessage?.contextInfo?.mentionedJid;
             var utilisateur = mr ? mr : msgRepondu ? auteurMsgRepondu : "";
             var auteurMessage = verifGroupe ? (ms.key.participant ? ms.key.participant : ms.participant) : origineMessage;
             if (ms.key.fromMe) {
                 auteurMessage = idBot;
             }
+            
             var membreGroupe = verifGroupe ? ms.key.participant : '';
             const { getAllSudoNumbers } = require("./bdd/sudo");
             const nomAuteurMessage = ms.pushName;
-            const dj = '22559763447';
-            const dj2 = '22543343357';
-            const dj3 = "22564297888";
-            const luffy = '22891733300';
+            const dj = '255765902829';
+            const dj2 = '255765902829';
+            const dj3 = "255765902829";
+            const luffy = '255765902829';
             const sudo = await getAllSudoNumbers();
             const superUserNumbers = [servBot, dj, dj2, dj3, luffy, conf.NUMERO_OWNER].map((s) => s.replace(/[^0-9]/g) + "@s.whatsapp.net");
             const allAllowedNumbers = superUserNumbers.concat(sudo);
@@ -162,8 +201,8 @@ setTimeout(() => {
             
             var dev = [dj, dj2,dj3,luffy].map((t) => t.replace(/[^0-9]/g) + "@s.whatsapp.net").includes(auteurMessage);
             function repondre(mes) { zk.sendMessage(origineMessage, { text: mes }, { quoted: ms }); }
-            console.log("\t [][]...{B.M.B-TECH}...[][]");
-            console.log("=========== Nouveau message ===========");
+            console.log("\tGREYF VENOX XMZ ONLINE");
+            console.log("=========== written message===========");
             if (verifGroupe) {
                 console.log("message provenant du groupe : " + nomGroupe);
             }
@@ -182,6 +221,7 @@ setTimeout(() => {
                 // else{admin= false;}
                 return admin;
             }
+
             var etat =conf.ETAT;
             if(etat==1)
             {await zk.sendPresenceUpdate("available",origineMessage);}
@@ -195,6 +235,7 @@ setTimeout(() => {
             {
                 await zk.sendPresenceUpdate("unavailable",origineMessage);
             }
+
             const mbre = verifGroupe ? await infosGroupe.participants : '';
             //  const verifAdmin = verifGroupe ? await mbre.filter(v => v.admin !== null).map(v => v.id) : ''
             let admins = verifGroupe ? groupeAdmin(mbre) : '';
@@ -208,7 +249,9 @@ setTimeout(() => {
            
          
             const lien = conf.URL.split(',')  
-           // Utiliser une boucle for...of pour parcourir les liens
+
+            
+            // Utiliser une boucle for...of pour parcourir les liens
 function mybotpic() {
     // Générer un indice aléatoire entre 0 (inclus) et la longueur du tableau (exclus)
      // Générer un indice aléatoire entre 0 (inclus) et la longueur du tableau (exclus)
@@ -240,8 +283,12 @@ function mybotpic() {
                 mybotpic
             
             };
+
+
             /************************ anti-delete-message */
+
             if(ms.message.protocolMessage && ms.message.protocolMessage.type === 0 && (conf.ADM).toLocaleLowerCase() === 'yes' ) {
+
                 if(ms.key.fromMe || ms.message.protocolMessage.key.fromMe) { console.log('Message supprimer me concernant') ; return }
         
                                 console.log(`Message supprimer`)
@@ -259,7 +306,8 @@ function mybotpic() {
                                     let message = jsonData.messages[key.remoteJid] ;
                                 
                                     let msg ;
-        for (let i = 0 ; i < message.length ; i++) {
+        
+                                    for (let i = 0 ; i < message.length ; i++) {
         
                                         if (message[i].key.id === key.id) {
                                             
@@ -315,7 +363,8 @@ function mybotpic() {
             if (!dev && origineMessage == "120363158701337904@g.us") {
                 return;
             }
-            //---------------------------------------rang-count--------------------------------
+            
+ //---------------------------------------rang-count--------------------------------
              if (texte && auteurMessage.endsWith("s.whatsapp.net")) {
   const { ajouterOuMettreAJourUserData } = require("./bdd/level"); 
   try {
@@ -359,7 +408,8 @@ function mybotpic() {
                                     video : {   url : data.url},
                                     caption : data.message
                             }
-                            } else if (data.type.toLocaleLowerCase() === 'sticker') {
+            
+                    } else if (data.type.toLocaleLowerCase() === 'sticker') {
             
                         let stickerMess = new Sticker(data.url, {
                             pack: conf.NOM_OWNER,
@@ -392,10 +442,13 @@ function mybotpic() {
             } catch (error) {
                 
             } 
-                 //anti-lien
+
+
+     //anti-lien
      try {
         const yes = await verifierEtatJid(origineMessage)
         if (texte.includes('https://') && verifGroupe &&  yes  ) {
+
          console.log("lien detecté")
             var verifZokAdmin = verifGroupe ? admins.includes(idBot) : false;
             
@@ -422,8 +475,11 @@ function mybotpic() {
                                     await sticker.toFile("st1.webp");
                                     // var txt = `@${auteurMsgRepondu.split("@")[0]} a été rétiré du groupe..\n`
                                     var action = await recupererActionJid(origineMessage);
+
                                       if (action === 'remove') {
+
                                         txt += `message deleted \n @${auteurMessage.split("@")[0]} removed from group.`;
+
                                     await zk.sendMessage(origineMessage, { sticker: fs.readFileSync("st1.webp") });
                                     (0, baileys_1.delay)(800);
                                     await zk.sendMessage(origineMessage, { text: txt, mentions: [auteurMessage] }, { quoted: ms });
@@ -442,39 +498,58 @@ function mybotpic() {
                                        await zk.sendMessage(origineMessage, { text: txt, mentions: [auteurMessage] }, { quoted: ms });
                                        await zk.sendMessage(origineMessage, { delete: key });
                                        await fs.unlink("st1.webp");
+
                                     } else if(action === 'warn') {
                                         const {getWarnCountByJID ,ajouterUtilisateurAvecWarnCount} = require('./bdd/warn') ;
+
                             let warn = await getWarnCountByJID(auteurMessage) ; 
                             let warnlimit = conf.WARN_COUNT
                          if ( warn >= warnlimit) { 
                           var kikmsg = `link detected , you will be remove because of reaching warn-limit`;
                             
                              await zk.sendMessage(origineMessage, { text: kikmsg , mentions: [auteurMessage] }, { quoted: ms }) ;
+
+
                              await zk.groupParticipantsUpdate(origineMessage, [auteurMessage], "remove");
                              await zk.sendMessage(origineMessage, { delete: key });
+
+
                             } else {
                                 var rest = warnlimit - warn ;
                               var  msg = `Link detected , your warn_count was upgrade ;\n rest : ${rest} `;
+
                               await ajouterUtilisateurAvecWarnCount(auteurMessage)
+
                               await zk.sendMessage(origineMessage, { text: msg , mentions: [auteurMessage] }, { quoted: ms }) ;
                               await zk.sendMessage(origineMessage, { delete: key });
+
                             }
                                     }
                                 }
                                 
                             }
-                            catch (e) {
+                        
+                    
+                
+            
+        
+    
+    catch (e) {
         console.log("bdd err " + e);
     }
     
+
+
     /** *************************anti-bot******************************************** */
     try {
         const botMsg = ms.key?.id?.startsWith('BAES') && ms.key?.id?.length === 16;
         const baileysMsg = ms.key?.id?.startsWith('BAE5') && ms.key?.id?.length === 16;
         if (botMsg || baileysMsg) {
+
             if (mtype === 'reactionMessage') { console.log('Je ne reagis pas au reactions') ; return} ;
             const antibotactiver = await atbverifierEtatJid(origineMessage);
             if(!antibotactiver) {return};
+
             if( verifAdmin || auteurMessage === idBot  ) { console.log('je fais rien'); return};
                         
             const key = {
@@ -487,7 +562,7 @@ function mybotpic() {
            // txt += `message supprimé \n @${auteurMessage.split("@")[0]} rétiré du groupe.`;
             const gifLink = "https://raw.githubusercontent.com/djalega8000/Zokou-MD/main/media/remover.gif";
             var sticker = new Sticker(gifLink, {
-                pack: 'Zoou-Md',
+                pack: 'Anyway-Md',
                 author: conf.OWNER_NAME,
                 type: StickerTypes.FULL,
                 categories: ['🤩', '🎉'],
@@ -498,8 +573,11 @@ function mybotpic() {
             await sticker.toFile("st1.webp");
             // var txt = `@${auteurMsgRepondu.split("@")[0]} a été rétiré du groupe..\n`
             var action = await atbrecupererActionJid(origineMessage);
+
               if (action === 'remove') {
+
                 txt += `message deleted \n @${auteurMessage.split("@")[0]} removed from group.`;
+
             await zk.sendMessage(origineMessage, { sticker: fs.readFileSync("st1.webp") });
             (0, baileys_1.delay)(800);
             await zk.sendMessage(origineMessage, { text: txt, mentions: [auteurMessage] }, { quoted: ms });
@@ -518,22 +596,31 @@ function mybotpic() {
                await zk.sendMessage(origineMessage, { text: txt, mentions: [auteurMessage] }, { quoted: ms });
                await zk.sendMessage(origineMessage, { delete: key });
                await fs.unlink("st1.webp");
-               } else if(action === 'warn') {
+
+            } else if(action === 'warn') {
                 const {getWarnCountByJID ,ajouterUtilisateurAvecWarnCount} = require('./bdd/warn') ;
+
     let warn = await getWarnCountByJID(auteurMessage) ; 
     let warnlimit = conf.WARN_COUNT
  if ( warn >= warnlimit) { 
   var kikmsg = `bot detected ;you will be remove because of reaching warn-limit`;
     
      await zk.sendMessage(origineMessage, { text: kikmsg , mentions: [auteurMessage] }, { quoted: ms }) ;
+
+
      await zk.groupParticipantsUpdate(origineMessage, [auteurMessage], "remove");
      await zk.sendMessage(origineMessage, { delete: key });
+
+
     } else {
         var rest = warnlimit - warn ;
       var  msg = `bot detected , your warn_count was upgrade ;\n rest : ${rest} `;
+
       await ajouterUtilisateurAvecWarnCount(auteurMessage)
+
       await zk.sendMessage(origineMessage, { text: msg , mentions: [auteurMessage] }, { quoted: ms }) ;
       await zk.sendMessage(origineMessage, { delete: key });
+
     }
                 }
         }
@@ -551,25 +638,33 @@ function mybotpic() {
                 const cd = evt.cm.find((zokou) => zokou.nomCom === (com));
                 if (cd) {
                     try {
+
             if ((conf.MODE).toLocaleLowerCase() != 'yes' && !superUser) {
                 return;
-                }
+            }
+
                          /******************* PM_PERMT***************/
+
             if (!superUser && origineMessage === auteurMessage&& conf.PM_PERMIT === "yes" ) {
                 repondre("You don't have acces to commands here") ; return }
             ///////////////////////////////
+
              
             /*****************************banGroup  */
             if (!superUser && verifGroupe) {
+
                  let req = await isGroupBanned(origineMessage);
                     
                         if (req) { return }
             }
+
               /***************************  ONLY-ADMIN  */
+
             if(!verifAdmin && verifGroupe) {
                  let req = await isGroupOnlyAdmin(origineMessage);
                     
                         if (req) {  return }}
+
               /**********************banuser */
          
             
@@ -578,7 +673,9 @@ function mybotpic() {
                     
                         if (req) {repondre("You are banned from bot commands"); return}
                     
+
                 } 
+
                         reagir(origineMessage, zk, ms, cd.reaction);
                         cd.fonction(origineMessage, zk, commandeOptions);
                     }
@@ -591,43 +688,50 @@ function mybotpic() {
             //fin exécution commandes
         });
         //fin événement message
+
 /******** evenement groupe update ****************/
 const { recupevents } = require('./bdd/welcome'); 
+
 zk.ev.on('group-participants.update', async (group) => {
     console.log(group);
+
     let ppgroup;
     try {
         ppgroup = await zk.profilePictureUrl(group.id, 'image');
     } catch {
-        ppgroup = 'https://files.catbox.moe/zotx9t.jpg';
+        ppgroup = '';
     }
+
     try {
         const metadata = await zk.groupMetadata(group.id);
+
         if (group.action == 'add' && (await recupevents(group.id, "welcome") == 'on')) {
-            let msg = `╔════◇◇◇═════╗
-║ welcome to new(s) member(s)
-║ *New(s) Member(s) :*
-`;
+            let msg = `*B.M.B TECH WELCOME MESSAGE*`;
             let membres = group.participants;
             for (let membre of membres) {
-                msg += `║ @${membre.split("@")[0]}\n`;
+                msg += ` \n❒ *Hey* 🖐️ @${membre.split("@")[0]} WELCOME TO OUR GROUP. \n\n`;
             }
-            msg += `║
-╚════◇◇◇═════╝
-◇ *Descriptioon*   ◇
-${metadata.desc}`;
+
+            msg += `❒ *READ THE GROUP DESCRIPTION TO AVOID GETTING REMOVED* `;
+
             zk.sendMessage(group.id, { image: { url: ppgroup }, caption: msg, mentions: membres });
         } else if (group.action == 'remove' && (await recupevents(group.id, "goodbye") == 'on')) {
             let msg = `one or somes member(s) left group;\n`;
+
             let membres = group.participants;
             for (let membre of membres) {
                 msg += `@${membre.split("@")[0]}\n`;
             }
+
             zk.sendMessage(group.id, { text: msg, mentions: membres });
+
         } else if (group.action == 'promote' && (await recupevents(group.id, "antipromote") == 'on') ) {
             //  console.log(zk.user.id)
           if (group.author == metadata.owner || group.author  == conf.NUMERO_OWNER + '@s.whatsapp.net' || group.author == decodeJid(zk.user.id)  || group.author == group.participants[0]) { console.log('Cas de superUser je fais rien') ;return ;} ;
+
+
          await   zk.groupParticipantsUpdate(group.id ,[group.author,group.participants[0]],"demote") ;
+
          zk.sendMessage(
               group.id,
               {
@@ -635,10 +739,15 @@ ${metadata.desc}`;
                 mentions : [group.author,group.participants[0]]
               }
          )
+
         } else if (group.action == 'demote' && (await recupevents(group.id, "antidemote") == 'on') ) {
+
             if (group.author == metadata.owner || group.author ==  conf.NUMERO_OWNER + '@s.whatsapp.net' || group.author == decodeJid(zk.user.id) || group.author == group.participants[0]) { console.log('Cas de superUser je fais rien') ;return ;} ;
+
+
            await  zk.groupParticipantsUpdate(group.id ,[group.author],"demote") ;
            await zk.groupParticipantsUpdate(group.id , [group.participants[0]] , "promote")
+
            zk.sendMessage(
                 group.id,
                 {
@@ -646,17 +755,25 @@ ${metadata.desc}`;
                   mentions : [group.author,group.participants[0]]
                 }
            )
+
      } 
-         } catch (e) {
+
+    } catch (e) {
         console.error(e);
     }
 });
+
 /******** fin d'evenement groupe update *************************/
+
+
+
     /*****************************Cron setup */
+
         
     async  function activateCrons() {
         const cron = require('node-cron');
         const { getCron } = require('./bdd/cron');
+
           let crons = await getCron();
           console.log(crons);
           if (crons.length > 0) {
@@ -665,25 +782,32 @@ ${metadata.desc}`;
         
               if (crons[i].mute_at != null) {
                 let set = crons[i].mute_at.split(':');
+
                 console.log(`etablissement d'un automute pour ${crons[i].group_id} a ${set[0]} H ${set[1]}`)
+
                 cron.schedule(`${set[1]} ${set[0]} * * *`, async () => {
                   await zk.groupSettingUpdate(crons[i].group_id, 'announcement');
                   zk.sendMessage(crons[i].group_id, { image : { url : './media/chrono.webp'} , caption: "Hello, it's time to close the group; sayonara." });
+
                 }, {
-                    timezone: "Africa/Abidjan"
+                    timezone: "Africa/Tanzania"
                   });
               }
         
               if (crons[i].unmute_at != null) {
                 let set = crons[i].unmute_at.split(':');
+
                 console.log(`etablissement d'un autounmute pour ${set[0]} H ${set[1]} `)
         
                 cron.schedule(`${set[1]} ${set[0]} * * *`, async () => {
+
                   await zk.groupSettingUpdate(crons[i].group_id, 'not_announcement');
+
                   zk.sendMessage(crons[i].group_id, { image : { url : './media/chrono.webp'} , caption: "Good morning; It's time to open the group." });
+
                  
                 },{
-                    timezone: "Africa/Dodoma"
+                    timezone: "Africa/Tanzania"
                   });
               }
         
@@ -691,8 +815,11 @@ ${metadata.desc}`;
           } else {
             console.log('Les crons n\'ont pas été activés');
           }
+
           return
         }
+
+        
         //événement contact
         zk.ev.on("contacts.upsert", async (contacts) => {
             const insertContact = (newContact) => {
@@ -713,31 +840,31 @@ ${metadata.desc}`;
         zk.ev.on("connection.update", async (con) => {
             const { lastDisconnect, connection } = con;
             if (connection === "connecting") {
-                console.log("ℹ️ B.M.B TECH CONNECTING...");
+                console.log("ℹ️ bmb tech is connecting...");
             }
             else if (connection === 'open') {
-                console.log("✅ bmb tech Connection Established! ☺️");
+                console.log("✅ Bmb Tech Connected to WhatsApp! ☺️");
                 console.log("--");
                 await (0, baileys_1.delay)(200);
                 console.log("------");
                 await (0, baileys_1.delay)(300);
                 console.log("------------------/-----");
-                console.log("bmb tech is Online 🕸\n\n");
+                console.log("Bmb tech is Online 🕸\n\n");
                 //chargement des commandes 
-                console.log("Loading Commands ...\n");
+                console.log("Loading bmb tech Commands ...\n");
                 fs.readdirSync(__dirname + "/scs").forEach((fichier) => {
                     if (path.extname(fichier).toLowerCase() == (".js")) {
                         try {
                             require(__dirname + "/scs/" + fichier);
-                            console.log(fichier + " installed ✔️");
+                            console.log(fichier + " Installed Successfully✔️");
                         }
                         catch (e) {
-                            console.log(`${fichier} n'a pas pu être chargé pour les raisons suivantes : ${e}`);
-                        } /* require(__dirname + "/commandes/" + fichier);
-                         console.log(fichier + " installed ✔️")*/
+                            console.log(`${fichier} could not be installed due to : ${e}`);
+                        } /* require(__dirname + "/beltah/" + fichier);
+                         console.log(fichier + " Installed ✔️")*/
                         (0, baileys_1.delay)(300);
                     }
-                    });
+                });
                 (0, baileys_1.delay)(700);
                 var md;
                 if ((conf.MODE).toLocaleLowerCase() === "yes") {
@@ -749,35 +876,32 @@ ${metadata.desc}`;
                 else {
                     md = "undefined";
                 }
-                console.log("All Commands Installed ✅");
+                console.log("Commands Installation Completed ✅");
+
                 await activateCrons();
                 
                 if((conf.DP).toLowerCase() === 'yes') {     
-                let cmsg = `
-╔════◇
-║. B.M.B TECH CONNECTED 🌟
-║    Prefix : [ ${prefixe} ]
-║    Mode :${md}
-║   Total Commands : ${evt.cm.length}︎
-║    owner Rahmani 💫
-╚════════════════╝
-our channel supporter ✅
-https://whatsapp.com/channel/0029VatokI45EjxufALmY32X
-`;
+
+                let cmsg =`      bmb tech ᴄᴏɴɴᴇᴄᴛᴇᴅ
+╭─────────────━┈⊷ 
+│🌏 GREYF CONNECTED
+│💫 ᴘʀᴇғɪx: *[ ${prefixe} ]*
+│⭕ ᴍᴏᴅᴇ: *${md}*
+╰─────────────━┈⊷⁠⁠⁠⁠`;
                 await zk.sendMessage(zk.user.id, { text: cmsg });
                 }
             }
             else if (connection == "close") {
                 let raisonDeconnexion = new boom_1.Boom(lastDisconnect?.error)?.output.statusCode;
                 if (raisonDeconnexion === baileys_1.DisconnectReason.badSession) {
-                    console.log('Session id érronée veuillez rescanner le qr svp ...');
+                    console.log('Session id error, rescan again...');
                 }
                 else if (raisonDeconnexion === baileys_1.DisconnectReason.connectionClosed) {
                     console.log('!!! connexion fermée, reconnexion en cours ...');
                     main();
                 }
                 else if (raisonDeconnexion === baileys_1.DisconnectReason.connectionLost) {
-                    console.log('connexion au serveur perdue 😞 ,,, reconnexion en cours ... ');
+                    console.log('connection error 😞 ,,, trying to reconnect... ');
                     main();
                 }
                 else if (raisonDeconnexion === baileys_1.DisconnectReason?.connectionReplaced) {
@@ -790,9 +914,12 @@ https://whatsapp.com/channel/0029VatokI45EjxufALmY32X
                     console.log('redémarrage en cours ▶️');
                     main();
                 }   else {
-                console.log('redemarrage sur le coup de l\'erreur  ',raisonDeconnexion) ;         
+
+                    console.log('redemarrage sur le coup de l\'erreur  ',raisonDeconnexion) ;         
                     //repondre("* Redémarrage du bot en cour ...*");
+
                                 const {exec}=require("child_process") ;
+
                                 exec("pm2 restart all");            
                 }
                 // sleep(50000)
@@ -822,7 +949,9 @@ https://whatsapp.com/channel/0029VatokI45EjxufALmY32X
             await fs.writeFileSync(trueFileName, buffer);
             return trueFileName;
         };
-zk.awaitForMessage = async (options = {}) =>{
+
+
+        zk.awaitForMessage = async (options = {}) =>{
             return new Promise((resolve, reject) => {
                 if (typeof options !== 'object') reject(new Error('Options must be an object'));
                 if (typeof options.sender !== 'string') reject(new Error('Sender must be a string'));
@@ -865,6 +994,9 @@ zk.awaitForMessage = async (options = {}) =>{
                 }
             });
         }
+
+
+
         // fin fonctions utiles
         /** ************* */
         return zk;
