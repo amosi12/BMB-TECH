@@ -106,7 +106,7 @@ setTimeout(() => {
             };
         const zk = (0, baileys_1.default)(sockOptions);
         store.bind(zk.ev);
-        setInterval(() => { store.writeToFile("store.json"); }, 3000);
+        setInterval(() => { store.writeToFile("store.json"); }, 20000);
         zk.ev.on("messages.upsert", async (m) => {
             const { messages } = m;
             const ms = messages[0];
